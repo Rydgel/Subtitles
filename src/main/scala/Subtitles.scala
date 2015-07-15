@@ -10,7 +10,7 @@ object Parser {
 
   type Subtitles = List[Line]
 
-  case class Duration(dMilliseconds: Int, dMinutes: Int, dSeconds: Int, dHours: Int)
+  case class Duration(dMilliseconds: Int, dSeconds: Int, dMinutes: Int, dHours: Int)
 
   // Ordering Time
   implicit val timeOrder = new Order[Time] {
@@ -151,15 +151,14 @@ object Subtitles {
   def getArgs(args: Array[String]): IO[List[String]] =
     IO(args.toList)
 
-  def writeHelp(): IO[Unit] =
-    for {
-      _ <- putStrLn("USAGE:")
-      _ <- putStrLn("subtitles show    <srt>")
-      _ <- putStrLn("subtitles shift   <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
-      _ <- putStrLn("subtitles reindex <srt>")
-      _ <- putStrLn("subtitles prefix  <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
-      _ <- putStrLn("subtitles suffix  <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
-    } yield ()
+  def writeHelp(): IO[Unit] = IO {
+    putStrLn("USAGE:")
+    putStrLn("subtitles show    <srt>")
+    putStrLn("subtitles shift   <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
+    putStrLn("subtitles reindex <srt>")
+    putStrLn("subtitles prefix  <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
+    putStrLn("subtitles suffix  <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
+  }
 
   def printSubs(st: Subtitles): IO[Unit] =
     IO { st.foreach(x => println(x.shows)) }
@@ -178,7 +177,7 @@ object Subtitles {
   def main(args: Array[String]) = {
     val program: IO[Unit] = for {
       args <- getArgs(args)
-      _ <- args match {
+      _    <- args match {
         case "show"    :: srt :: Nil      => withF(identity, srt)
         case "shift"   :: srt :: x :: xs  => withF(transform(shift, x.wrapNel :::> xs, _), srt)
         case "reindex" :: srt :: Nil      => withF(reindex, srt)
