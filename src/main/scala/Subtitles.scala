@@ -1,6 +1,5 @@
-import scalaz._, Scalaz._, effect._, IO._
+import scalaz._, Scalaz._, scalaz.concurrent._
 import fastparse._
-
 
 object Parser {
 
@@ -136,7 +135,7 @@ object Subtitles {
   import Parser._
 
 
-  def readFile(filename: String): IO[String] = IO {
+  def readFile(filename: String): Task[String] = Task {
     import java.nio.charset.Charset
     import java.nio.charset.CodingErrorAction
     import scala.io.Source
@@ -148,10 +147,10 @@ object Subtitles {
     str
   }
 
-  def getArgs(args: Array[String]): IO[List[String]] =
-    IO(args.toList)
+  def getArgs(args: Array[String]): Task[List[String]] =
+    Task(args.toList)
 
-  def writeHelp(): IO[Unit] = IO {
+  def writeHelp(): Task[Unit] = Task {
     println("USAGE:")
     println("subtitles show    <srt>")
     println("subtitles shift   <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
@@ -160,8 +159,8 @@ object Subtitles {
     println("subtitles suffix  <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
   }
 
-  def printSubs(st: Subtitles): IO[Unit] =
-    IO { st.foreach(x => println(x.shows)) }
+  def printSubs(st: Subtitles): Task[Unit] =
+    Task { st.foreach(x => println(x.shows)) }
 
   def transform(f: (Duration, Subtitles) => Subtitles, args: NonEmptyList[String], st: Subtitles): Subtitles =
     args match {
@@ -171,11 +170,11 @@ object Subtitles {
       case NonEmptyList(l)              => f(Duration(l.toInt, 0, 0, 0), st)
     }
 
-  def withF(f: Subtitles => Subtitles, srt: String): IO[Unit] =
-      readFile(srt).flatMap(x => printSubs(f(parse(x))))
+  def withF(f: Subtitles => Subtitles, srt: String): Task[Unit] =
+    readFile(srt) >>= printSubs _ <<< f <<< parse
 
-  def main(args: Array[String]) = {
-    val program: IO[Unit] = for {
+  def main(args: Array[String]): Unit = {
+    val program: Task[Unit] = for {
       args <- getArgs(args)
       _    <- args match {
         case "show"    :: srt :: Nil      => withF(identity, srt)
@@ -187,7 +186,7 @@ object Subtitles {
       }
     } yield ()
     // unleash the side-effects!
-    program.unsafePerformIO()
+    program.handle { case e: Throwable => writeHelp().run }.run
   }
 
 }
