@@ -152,12 +152,12 @@ object Subtitles {
     IO(args.toList)
 
   def writeHelp(): IO[Unit] = IO {
-    putStrLn("USAGE:")
-    putStrLn("subtitles show    <srt>")
-    putStrLn("subtitles shift   <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
-    putStrLn("subtitles reindex <srt>")
-    putStrLn("subtitles prefix  <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
-    putStrLn("subtitles suffix  <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
+    println("USAGE:")
+    println("subtitles show    <srt>")
+    println("subtitles shift   <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
+    println("subtitles reindex <srt>")
+    println("subtitles prefix  <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
+    println("subtitles suffix  <srt> <milliseconds> [<seconds> [<minutes> [<hours>]]]")
   }
 
   def printSubs(st: Subtitles): IO[Unit] =
